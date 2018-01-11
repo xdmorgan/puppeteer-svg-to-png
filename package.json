@@ -6,6 +6,7 @@
   "author": "Dan Morgan",
   "license": "MIT",
   "dependencies": {
+    "glob": "^7.1.2",
     "puppeteer": "^0.13.0"
   },
   "scripts": {
