@@ -9,12 +9,8 @@ const PATHS = {
 async function build() {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  await page.setContent(`
-<html>
-<head>
-${cssReset()}
-</head>
-<body>
+  await page.setContent(
+    html(`
   <svg width="128" height="128" style="enable-background:new 0 0 128 128;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <!-- https://upload.wikimedia.org/wikipedia/commons/d/d3/Emoji_u1f60e.svg -->
     <path d="M63.79,8.64C1.48,8.64,0,78.5,0,92.33c0,13.83,28.56,25.03,63.79,25.03 c35.24,0,63.79-11.21,63.79-25.03C127.58,78.5,126.11,8.64,63.79,8.64z" style="fill:#FCC21B;"/>
@@ -26,8 +22,8 @@ ${cssReset()}
       <path d="M31.06,45.02c-4.27-0.09-9.11,0.19-13.65,1.34c-5.1,1.28-7.07,3.85-7.6,9.39 c-0.53,5.43-1.13,19.27,8.73,24.46c0.57,0.3,1.83,0.5,2.44-0.91l0,0C24,66.21,25.61,60.13,32.54,47.22l0,0 C33.11,45.49,31.83,45.03,31.06,45.02z" style="fill:#FFFFFF;"/>
     </g>
   </svg>
-</body>
-  `);
+  `)
+  );
   await page.setViewport({ width: ICON_SIZE, height: ICON_SIZE });
   await page.screenshot({
     path: `${PATHS.out}/text.png`,
@@ -35,6 +31,13 @@ ${cssReset()}
   });
   await browser.close();
 }
+
+const html = content => `
+<html>
+  <head>${cssReset()}</head>
+  <body>${content}</body>
+</html>
+`;
 
 const cssReset = () => `
 <style>
