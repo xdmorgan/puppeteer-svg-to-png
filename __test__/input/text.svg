@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<svg height="200" width="560" xmlns="http://www.w3.org/2000/svg">
+	<!-- https://upload.wikimedia.org/wikipedia/commons/1/18/BinocularRivalry.svg -->
+	<defs>
+		<mask id="blend">
+			<text class="text" style="fill:#fff;" x="275" y="180">Blue</text>
+		</mask>
+	</defs>
+	<style type="text/css">
+		<![CDATA[.text{font-family:sans-serif;font-weight:bold;font-size:220px;text-anchor:middle}]]>
+    </style>
+	<text class="text" style="fill:#6ff;" x="275" y="180">Red</text>
+	<text class="text" style="fill:#f66;" x="275" y="180">Blue</text>
+	<text class="text" style="fill:#666;mask:url(#blend)" x="275" y="180">Red</text>
+</svg>

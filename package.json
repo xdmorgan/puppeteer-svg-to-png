@@ -1,0 +1,14 @@
+{
+  "name": "puppeteer-svg-to-png",
+  "version": "0.0.1",
+  "description": "Convert from SVG to PNG with Chrome Puppeteer",
+  "main": "index.js",
+  "author": "Dan Morgan",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^0.13.0"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
