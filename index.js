@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const glob = require('glob');
 const fs = require('fs-extra');
+const imagemin = require('imagemin');
 
 /* Constants
 ============================================================================ */
@@ -23,16 +24,19 @@ async function build() {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   // get list of files
-  const files = await find(SEARCH_PATTERN);
+  const queue = await find(SEARCH_PATTERN);
   // make sure the dirs are ready for saving
   await fs.emptyDir(PATHS.out);
   // process queue
-  const queue = [...files];
+  const files = [];
   while (queue.length) {
     const file = queue.shift();
     const dest = file.replace(PATHS.in, PATHS.out).replace('.svg', '.png');
     await render(page, file, dest, SIZE);
+    files.push(dest);
   }
+  // minify the generated images
+  await imagemin(files, PATHS.out);
   // we're done here
   await browser.close();
   // feedback, innit
