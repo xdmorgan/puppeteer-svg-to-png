@@ -7,6 +7,7 @@ const fs = require('fs-extra');
 
 const SEARCH_PATTERN = './__test__/input/**/*.svg';
 const SIZE = 128;
+const MULTIPLIERS = [1, 2, 3];
 const PATHS = {
   in: './__test__/input/',
   out: './__test__/output/',
@@ -31,7 +32,7 @@ async function build() {
   while (queue.length) {
     const file = queue.shift();
     const dest = file.replace(PATHS.in, PATHS.out).replace('.svg', '.png');
-    await render(page, file, dest, SIZE);
+    await render(page, file, dest, SIZE, MULTIPLIERS);
   }
   // we're done here
   await browser.close();
@@ -39,14 +40,20 @@ async function build() {
   return files.length;
 }
 
-async function render(page, file, dest, size) {
+async function render(page, file, dest, size, multipliers = [1]) {
+  const queue = multipliers.map(num => ({
+    size: size * num,
+    dest: filenameSuffix(dest, num),
+  }));
   const content = (await fs.readFile(file)).toString();
   await page.setContent(html(content));
+  await snapshot(page, queue.shift(), queue);
+}
+
+async function snapshot(page, { size, dest }, queue = []) {
   await page.setViewport({ width: size, height: size });
-  await page.screenshot({
-    path: dest,
-    omitBackground: true,
-  });
+  await page.screenshot({ path: dest, omitBackground: true });
+  if (queue.length) await snapshot(page, queue.shift(), queue);
 }
 
 /* Utils
@@ -69,6 +76,9 @@ const find = (pattern = '') =>
   new Promise((resolve, reject) => {
     glob(pattern, (err, files) => (err ? reject(err) : resolve(files)));
   });
+
+const filenameSuffix = (file, num, extname = '.png') =>
+  file.replace(extname, num > 1 ? `@${num}x${extname}` : extname);
 
 /* Run
 ============================================================================ */
