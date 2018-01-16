@@ -6,11 +6,15 @@
   "author": "Dan Morgan",
   "license": "MIT",
   "dependencies": {
+    "commander": "^2.13.0",
     "fs-extra": "^5.0.0",
     "glob": "^7.1.2",
     "puppeteer": "^0.13.0"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "puppeteer-svg2png"
+  },
+  "bin": {
+    "puppeteer-svg2png": "node cli.js"
   }
 }
