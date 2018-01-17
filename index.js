@@ -2,6 +2,8 @@ const puppeteer = require('puppeteer');
 const glob = require('glob');
 const fs = require('fs-extra');
 
+const MULTIPLIERS = [1, 2, 3];
+
 /* Main
 ============================================================================ */
 
@@ -22,7 +24,7 @@ async function build(pattern, { width, height, output }) {
     const file = queue.shift();
     const dest = `${output}/${file.replace('.svg', '.png')}`;
     await fs.ensureDir([...dest.split('/')].slice(0, -1).join('/'));
-    await render(page, { file, dest, width, height });
+    await render(page, { file, dest, width, height, multipliers: MULTIPLIERS });
   }
   // we're done here
   await browser.close();
@@ -30,14 +32,21 @@ async function build(pattern, { width, height, output }) {
   return files.length;
 }
 
-async function render(page, { file, dest, width, height }) {
+async function render(page, { file, dest, width, height, multipliers = [1] }) {
+  const queue = multipliers.map(num => ({
+    width: width * num,
+    height: height * num,
+    dest: filenameSuffix(dest, num),
+  }));
   const content = (await fs.readFile(file)).toString();
   await page.setContent(html(content));
+  await snapshot(page, queue.shift(), queue);
+}
+
+async function snapshot(page, { width, height, dest }, queue = []) {
   await page.setViewport({ width, height });
-  await page.screenshot({
-    path: dest,
-    omitBackground: true,
-  });
+  await page.screenshot({ path: dest, omitBackground: true });
+  if (queue.length) await snapshot(page, queue.shift(), queue);
 }
 
 /* Utils
@@ -60,6 +69,9 @@ const find = (pattern = '') =>
   new Promise((resolve, reject) => {
     glob(pattern, (err, files) => (err ? reject(err) : resolve(files)));
   });
+
+const filenameSuffix = (file, num, extname = '.png') =>
+  file.replace(extname, num > 1 ? `@${num}x${extname}` : extname);
 
 /* Run
 ============================================================================ */
