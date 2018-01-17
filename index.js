@@ -2,36 +2,27 @@ const puppeteer = require('puppeteer');
 const glob = require('glob');
 const fs = require('fs-extra');
 
-/* Constants
-============================================================================ */
-
-const SEARCH_PATTERN = './__test__/input/**/*.svg';
-const SIZE = 128;
-const PATHS = {
-  in: './__test__/input/',
-  out: './__test__/output/',
-};
-
 /* Main
 ============================================================================ */
 
 /**
  * Convert from SVG to 1-3x PNG
  */
-async function build() {
+async function build(pattern, { width, height, output }) {
   // create browser instance
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   // get list of files
-  const files = await find(SEARCH_PATTERN);
+  const files = await find(pattern);
   // make sure the dirs are ready for saving
-  await fs.emptyDir(PATHS.out);
+  await fs.emptyDir(output);
   // process queue
   const queue = [...files];
   while (queue.length) {
     const file = queue.shift();
-    const dest = file.replace(PATHS.in, PATHS.out).replace('.svg', '.png');
-    await render(page, file, dest, SIZE);
+    const dest = `${output}/${file.replace('.svg', '.png')}`;
+    await fs.ensureDir([...dest.split('/')].slice(0, -1).join('/'));
+    await render(page, { file, dest, width, height });
   }
   // we're done here
   await browser.close();
@@ -39,10 +30,10 @@ async function build() {
   return files.length;
 }
 
-async function render(page, file, dest, size) {
+async function render(page, { file, dest, width, height }) {
   const content = (await fs.readFile(file)).toString();
   await page.setContent(html(content));
-  await page.setViewport({ width: size, height: size });
+  await page.setViewport({ width, height });
   await page.screenshot({
     path: dest,
     omitBackground: true,
@@ -73,8 +64,9 @@ const find = (pattern = '') =>
 /* Run
 ============================================================================ */
 
-build().then(num =>
-  console.log(
-    `Rendering complete! Processed ${num} file${num !== 1 ? 's' : ''}`
-  )
-);
+module.exports = (pattern, opts) =>
+  build(pattern, opts).then(num =>
+    console.log(
+      `Rendering complete! Processed ${num} file${num !== 1 ? 's' : ''}`
+    )
+  );
