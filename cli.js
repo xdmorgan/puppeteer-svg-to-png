@@ -17,6 +17,7 @@ program
     'Specify the output directory for generated files',
     './pup4svg2png'
   )
+  .option('--sizes <sizes>', 'Versions to render, default 1-3x', '1,2,3')
   .action(app);
 
 function exitWithHelp(msg) {
