@@ -2,15 +2,18 @@ const puppeteer = require('puppeteer');
 const glob = require('glob');
 const fs = require('fs-extra');
 
-const MULTIPLIERS = [1, 2, 3];
-
 /* Main
 ============================================================================ */
 
 /**
  * Convert from SVG to 1-3x PNG
  */
-async function build(pattern, { width, height, output }) {
+async function build(pattern, { width, height, output, sizes }) {
+  const multipliers = sizes
+    .replace(' ', '')
+    .split(',')
+    .map(s => Number(s))
+    .filter(n => !isNaN(n));
   // create browser instance
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
@@ -24,7 +27,7 @@ async function build(pattern, { width, height, output }) {
     const file = queue.shift();
     const dest = `${output}/${file.replace('.svg', '.png')}`;
     await fs.ensureDir([...dest.split('/')].slice(0, -1).join('/'));
-    await render(page, { file, dest, width, height, multipliers: MULTIPLIERS });
+    await render(page, { file, dest, width, height, multipliers });
   }
   // we're done here
   await browser.close();
